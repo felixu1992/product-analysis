@@ -25,7 +25,10 @@ if __name__ == '__main__':
                    '在下面数据中 pageTitle 表示功能菜单，MPV 表示每个月的浏览量, 其中 ')
             for product in group.products:
                 des += f'pageTitle={product.pageTitle} 的 MPV={product.MPV},'
-            content = f'产品 {group.code} 有 {len(group.products)} 个功能页面，{des} 请告诉我当前产品他的功能菜单使用量 top10 和是使用量倒数的 top10'
+            content = (f'产品 {group.code} 有 {len(group.products)} 个功能页面，{des} 请告诉我当前产品他的功能菜单使用量 top10 和是使用量倒数的 top10，'
+                       + '跳过思考过程，直接告诉我结构化的结果，'
+                       + '其结构如下 {"top10": [{"title": "", "MPV": , "function": ""}], "top-10": [{"title": "", "MPV": , "function": ""}]}，'
+                       + '在以上结构中，title 为原 pageTitle 的值， MPV 为对应的 MPV 的值， function 为你根据产品和功能，预计的可能的功能')
             response = client.chat(role, content)
             print(textwrap.fill(
                 response.choices[0].message.content,
