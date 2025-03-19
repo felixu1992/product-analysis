@@ -10,23 +10,42 @@ class Client:
             )
         )
 
-    def chat(self, role, content):
+
+    def statistics(self, content):
         completion = self.client.chat.completions.create(
             model="deepseek-chat",
             messages=[
                 {
                     "role": "system",
-                    "content": "用户将提供给你一段新闻内容，请你分析新闻内容，并提取其中的关键信息，以 JSON 的形式输出，输出的 JSON 需遵守以下的格式：\n\n{\n  \"entiry\": <新闻实体>,\n  \"time\": <新闻时间，格式为 YYYY-mm-dd HH:MM:SS，没有请填 null>,\n  \"summary\": <新闻内容总结>\n}"
+                    "content": "用户将提供给你一段格式化的数据，你是经验丰富的产品经理，善于分析产品的热门功能和冷门功能，同时能够在多个产品直接找到一些相似功能，优化产品设计,"
+                               "在用户给出的数据中 pageTitle 表示功能菜单，MPV 表示每个月的浏览量，请你分析数据内容，并提取其中的信息，以 JSON 的形式输出，输出的 JSON 需遵守以下的格式："
+                               "\n\n{\n  \"top10\": [{\"title\": "", \"MPV\": , \"function\": \"\"}], \"top-10\": [{\"title\": \"\", \"MPV\": , \"function\": \"\"}]\n}"
+                               "在以上结构中，title 为原 pageTitle 的值， MPV 为对应的 MPV 的值， function 为你根据产品和功能，预计的可能的功能"
                 },
                 {
                     "role": "user",
-                    "content": "8月31日，一枚猎鹰9号运载火箭于美国东部时间凌晨3时43分从美国佛罗里达州卡纳维拉尔角发射升空，将21颗星链卫星（Starlink）送入轨道。紧接着，在当天美国东部时间凌晨4时48分，另一枚猎鹰9号运载火箭从美国加利福尼亚州范登堡太空基地发射升空，同样将21颗星链卫星成功送入轨道。两次发射间隔65分钟创猎鹰9号运载火箭最短发射间隔纪录。\n\n美国联邦航空管理局于8月30日表示，尽管对太空探索技术公司的调查仍在进行，但已允许其猎鹰9号运载火箭恢复发射。目前，双方并未透露8月28日助推器着陆失败事故的详细信息。尽管发射已恢复，但原计划进行五天太空活动的“北极星黎明”（Polaris Dawn）任务却被推迟。美国太空探索技术公司为该任务正在积极筹备，等待美国联邦航空管理局的最终批准后尽快进行发射。"
+                    "content": content
                 }
             ]
         )
-        print(completion.choices[0].message.content)
+        return completion.choices[0].message.content
 
 
-if __name__ == '__main__':
-    client = Client()
-    client.chat('', '')
+    def analysis(self, content):
+        completion = self.client.chat.completions.create(
+            model="deepseek-reasoner",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "用户将提供给你一段格式化的数据，你是经验丰富的产品经理，善于分析产品的热门功能和冷门功能，同时能够在多个产品直接找到一些相似功能，优化产品设计,"
+                               "top10 表示对应产品 MPV(月访问量) 前十的功能，top-10 表示 MPV(月访问量) 最少的十个功能，你需要在用户提供的数据进行横向和纵向对比，首先是同一个内"
+                               "是否存在重复建设的功能，其次是在多个产品之间，是否存在可能的重复建设，如果只有一个产品，仅进行产品内的横向分析，最终，你需要给出你分析的结果和优化的建议，"
+                               "无需给出思考过程，但是请分析和建议尽可能专业"
+                },
+                {
+                    "role": "user",
+                    "content": content
+                }
+            ]
+        )
+        return completion.choices[0].message.content
