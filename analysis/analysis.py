@@ -22,7 +22,9 @@ if __name__ == '__main__':
         data=[]
         # 调用第一次大模型，让其对产品进行总结
         for product in holder.products:
-            data.append(product.__dict__)
+            # data.append(product.__dict__)
+            data.append('product_name:' + product.product_name + ',page_id:' + product.page_id +',mpv:' + str(product.mpv))
+        # print(data)
         content = json.dumps(data, indent=4, ensure_ascii=False)
         url = "https://api.example.com/post-endpoint"
         headers = {
