@@ -12,11 +12,11 @@ class Product:
         """
 
 class ProductGroup:
-    def __init__(self, code, products):
-        self.code = code
+    def __init__(self, name, products):
+        self.name = name
         self.products = products
         """
-        构造 ProductGroup 对象，用以对 Product 进行按 ProductCode 进行分组
+        构造 ProductGroup 对象，用以对 Product 进行按 product_name 进行分组
         """
 
 
@@ -60,9 +60,9 @@ class ProductHolder:
         # 构建所有产品信息
         self.read_product()
         # 产品组
-        self.product_groups = []
+        # self.product_groups = []
         # 构建产品组
-        self.group_by_product_code()
+        # self.group_by_product_code()
 
     def read_product(self):
         """
@@ -75,7 +75,7 @@ class ProductHolder:
             info = [column.value for column in self.rows[row]]
             # 定义当前要处理的用例对象
             product = Product()
-            # 将表头字段对应的列作为对象字段，将当前行对应的列信息作为值，填入用例对象中
+            # 将表头字段对应的列作为对象字段，将当前行对应的列信息作为值，填入产品对象中
             for i in zip(self.title, info):
                 setattr(product, i[0], i[1])
             # 定义当前用例所在行数(其实该行数为实际对应 Excel 中行数减 1)
@@ -90,14 +90,14 @@ class ProductHolder:
         """
         # 使用 defaultdict 进行分组
         group_dict = defaultdict(list)
-        # 根据 productCode 分组
+        # 根据 product_line 分组
         for product in self.products:
-            group_dict[product.productCode].append(product)
+            group_dict[product.product_name].append(product)
         # 转换为 ProductGroup 对象列表
         self.product_groups = [
-            ProductGroup(code=code, products=products)
-            for code, products in group_dict.items()
+            ProductGroup(name=name, products=products)
+            for name, products in group_dict.items()
         ]
         # 验证分组结果
         for group in self.product_groups:
-            print(f"Group {group.code} has {len(group.products)} products")
+            print(f"Product Name {group.name} has {len(group.products)} products")
