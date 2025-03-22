@@ -1,5 +1,6 @@
 import json
 import os
+import requests
 
 import textwrap
 from excel_handler import Product, ProductGroup, ProductHolder, ExcelParser
@@ -23,20 +24,35 @@ if __name__ == '__main__':
         for product in holder.products:
             data.append(product.__dict__)
         content = json.dumps(data, indent=4, ensure_ascii=False)
-        print(content)
+        url = "https://api.example.com/post-endpoint"
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer YOUR_TOKEN"
+        }
+        # 发送 POST 请求
+        response = requests.post(
+            url,
+            headers=headers,
+            json=data  # 自动序列化为 JSON 并设置 Content-Type
+        )
+
+        # 处理响应
+        print("状态码:", response.status_code)
+        print("响应内容:", response.json())  # 假设返回的是 JSON
+        # print(content)
         # for group in holder.product_groups:
         #     for product in group.products:
         #         des += f'page_id 为 {product.page_id} 的 mpv 是 {product.mpv},'
         #     content = f'产品 {group.name} 有 {len(group.products)} 个功能页面，{des} 请告诉我当前产品他的功能菜单使用量 top10 和是使用量倒数的 top10'
         #     print(content)
-        response = client.statistics(content)
-        print(textwrap.fill(
-            response,
-            50
-        ))
+        # response = client.statistics(content)
+        # print(textwrap.fill(
+        #     response,
+        #     50
+        # ))
         # 去掉一些奇怪的标记
-        response = response.replace('```', '').replace('json', '')
-        print(response)
+        # response = response.replace('```', '').replace('json', '')
+        # print(response)
         # data.append(response)
         # 调用第二次大模型，让其对产品进行分析，是否存在重复建设的功能
         # result = client.analysis(json.dumps(data, indent=4, ensure_ascii=False))
