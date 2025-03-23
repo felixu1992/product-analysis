@@ -1,10 +1,48 @@
 import json
 import os
 import requests
-
+import re
 import textwrap
 from excel_handler import Product, ProductGroup, ProductHolder, ExcelParser
 from llm import Client
+
+def url_cleaning(url):
+    # 域名剥离
+    path = re.sub(r'^(?:https?:\/\/)?[^\/]+', '', url)
+
+    # 路径清洗
+    parts = path.strip('/').split('/')
+    for i in range(len(parts)):
+        # 替换数字ID
+        parts[i] = re.sub(r'\d+', '', parts[i])
+        # 标准化版本
+        if re.match(r'^v\d+$', parts[i]):
+            parts[i] = '_version'
+        # 过滤通用词
+        if parts[i] in ['index', 'home']:
+            parts[i] = ''
+    # 重新组合路径，去掉空字符串
+    cleaned_parts = [p for p in parts if p]
+    cleaned_path = '/' + '/'.join(cleaned_parts) if cleaned_parts else ''
+
+    # 处理可能的空路径
+    if not cleaned_path:
+        return 'root'
+
+    # 语义提取
+    parts = cleaned_path.strip('/').split('/')
+    if len(parts) <= 3:
+        semantic = '/'.join(parts)
+    else:
+        first_two = parts[:2]
+        last_two = parts[-2:]
+        combined = first_two + last_two
+        semantic = '/'.join(combined)
+
+    # 处理多余的 /
+    semantic = re.sub(r'/+', '/', semantic)
+
+    return semantic
 
 if __name__ == '__main__':
     src = os.path.join('../source', 'data.xlsx')
@@ -19,28 +57,36 @@ if __name__ == '__main__':
     # 循环 sheet 页
     for sheet_name in sheet_names:
         holder = ProductHolder(src_parser.work_book, sheet_name)
-        data=[]
+        data=''
+        for group in holder.product_groups:
+            des = f'产品 {group.name} 共计有 {len(group.products)} 个功能页面，其详细信息如下：'
+            for product in group.products:
+                des += f'page_id 为 {product.page_id} 的 mpv 是 {product.mpv},'
+            # 去掉最后一个逗号
+            des = des[:-1]
+            print(des)
         # 调用第一次大模型，让其对产品进行总结
-        for product in holder.products:
-            # data.append(product.__dict__)
-            data.append('product_name:' + product.product_name + ',page_id:' + product.page_id +',mpv:' + str(product.mpv))
+        # for product in holder.products:
+        #     # data.append(product.__dict__)
+        #     product.page_id = url_cleaning(product.page_id)
+        #     data += 'product_name:' + product.product_name + ',page_id:' + product.page_id +',mpv:' + str(product.mpv) + ' '
         # print(data)
-        content = json.dumps(data, indent=4, ensure_ascii=False)
-        url = "https://api.example.com/post-endpoint"
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": "Bearer YOUR_TOKEN"
-        }
-        # 发送 POST 请求
-        response = requests.post(
-            url,
-            headers=headers,
-            json=data  # 自动序列化为 JSON 并设置 Content-Type
-        )
-
-        # 处理响应
-        print("状态码:", response.status_code)
-        print("响应内容:", response.json())  # 假设返回的是 JSON
+        # content = json.dumps(data, indent=4, ensure_ascii=False)
+        # url = "https://api.example.com/post-endpoint"
+        # headers = {
+        #     "Content-Type": "application/json",
+        #     "Authorization": "Bearer YOUR_TOKEN"
+        # }
+        # # 发送 POST 请求
+        # response = requests.post(
+        #     url,
+        #     headers=headers,
+        #     json=data  # 自动序列化为 JSON 并设置 Content-Type
+        # )
+        #
+        # # 处理响应
+        # print("状态码:", response.status_code)
+        # print("响应内容:", response.json())  # 假设返回的是 JSON
         # print(content)
         # for group in holder.product_groups:
         #     for product in group.products:

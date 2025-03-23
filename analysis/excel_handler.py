@@ -60,9 +60,9 @@ class ProductHolder:
         # 构建所有产品信息
         self.read_product()
         # 产品组
-        # self.product_groups = []
+        self.product_groups = []
         # 构建产品组
-        # self.group_by_product_code()
+        self.group_by_product_code()
 
     def read_product(self):
         """
