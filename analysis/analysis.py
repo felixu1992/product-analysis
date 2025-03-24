@@ -61,6 +61,7 @@ if __name__ == '__main__':
         for group in holder.product_groups:
             des = f'产品 {group.name} 共计有 {len(group.products)} 个功能页面，其详细信息如下：'
             for product in group.products:
+                product.page_id = url_cleaning(product.page_id)
                 des += f'page_id 为 {product.page_id} 的 mpv 是 {product.mpv},'
             # 去掉最后一个逗号
             des = des[:-1]
